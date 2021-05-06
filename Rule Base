@@ -1,0 +1,35 @@
+Règles d'habitabilité planète :
+R1 : Si Planète = Tellurique alors Habitabilité + 10
+R2 : Si Planete = Gazeuse alors Habitabilité = -1000
+R3 : Si Atmosphère = T alors Habitabilité + 10
+R4 : Si Atmosphère = NIL alors Habitabilité -10
+R5 : Si Champ_Magnetique = T alors Habitabilité + 5
+R6 : Si Champ_Magnetique = NIL alors Habitabilité -5
+R7 : Si Force_CM > Threshold alors Habitabilité +3
+R8 : Si Force_CM < Threshold alors Habitabilité -3
+R9 : Si Oxygène_A -> Intervalle_Terre alors Habitabilité +3
+R10 : Si Oxygène_A not in Intervalle_Terre alors Habitabilité -3
+R11 : Si Azote_A -> Intervalle_Terre alors Habitabilité +3
+R12 : Si Azote_A not in Intervalle_Terre alors Habitabilité -3
+R13 : Si CO2_A -> Intervalle_Terre alors Habitabilité +3
+R14 : Si CO2_A not in Intervalle_Terre alors Habitabilité -3
+R15 : Si Deg_Incli -> Deg_Terre alors Habitabilité +2
+R16 : Si Deg_Incli not Deg_Terre alors Habitabilité -2
+R17 : Si Distance_Etoile -> Intervalle_Hab alors Habitabilité +15
+R18 : Si Distance_Etoile not in Intervalle_Hab alors Habitabilité -1000
+R19 : Si Temp_Surface = Intervalle_Eau_Liq alors Habitabilité +20
+R20 : Si Temp_Surface not in Intervalle_Eau_Liq alors Habitabilité -1000
+R21 : Si Habitabilité >Thresh_Hab alors "Planete Habitable"
+R22 : Si Habitabilité < Thresh_Hab alors "Planete Non-Habitable"
+R23 : Si Taille_Planete -> Interv_Terre alors Taille_Planete = "Earth Like"
+R24 : Si Taille_Planete -> Interv_Super_Terre alors Taille_Planete = "Super Earth"
+R25 : Si Taille_Planete -> Interv_Mini_Neptune alors Taille_Planete = "Mini Neptune"
+R26 : Si Gravite -> Interv_Terre alors Habitabilité +3
+R27 : Si Gravite > 10*Terre alors Habitabilité -3
+R28 : Si Gravite < 0.1*Terre alors Habitabilité -1
+R29 : Si Gravite -> Interv_Terre alors Gravite_Info = "Similar to Earth"
+R30 : Si Gravite -> [0;1[ alors Gravite_Info = "Ligter than Earth"
+R31 : Si Gravite -> [3;10] alors Gravite_Info = "Hard to survive"
+
+Règles concernant les étoiles :
+R32 : Si Etoile dans Liste_Etoiles alors (L = 4π * R² * σ * T^4) && (D_Min = sqrt(L[etoile]/L[soleil]) * 0.95 * d[T-S]) && (D_Max = sqrt(L[etoile]/L[soleil]) * 1.50 * d[T-S])

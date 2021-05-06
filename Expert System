@@ -1,0 +1,241 @@
+;Exemple planete
+(setq planete1 '((Nom 'XA443) (Type 'Tellurique) (Rayon 3500) (Distance 0.23) (Etoile 'Soleil) (Atmos T) (Taux_Oxy 20)
+(Taux_Azo 70) (Taux_CO2 10) (Champ_Magn T) (Puissance_CM 0.89) (Deg_Inclinaison T) (Gravite 12) (Temp_Surface 12) (Habitabilite 0)))
+
+(setq planete2 '((Nom 'XA445) (Type 'Tellurique) (Rayon 4500) (Distance 2.53) (Etoile 'Sirius) (Atmos NIL) (Taux_Oxy 2)
+                 (Taux_Azo 90) (Taux_CO2 8) (Champ_Magn T) (Puissance_CM 0.1) (Deg_Inclinaison NIL) (Gravite 20) (Temp_Surface -20) (Habitabilite 0)))
+
+;Base de règles
+(defparameter R1 '("Type de planete" ((Type 'Tellurique eq)) 10))
+(defparameter R2 '("Type de planete" ((Type 'Gazeuse eq)) -1000))
+(defparameter R3 '("Presence atmosphère" ((Atmos T eq)) 10))
+(defparameter R4 '("Presence atmosphère" ((Atmos NIL eq)) -10))
+(defparameter R5 '("Taux Oxygène" ((Taux_Oxy 15 >) (Taux_Oxy 30 <)) 3))
+(defparameter R6 '("Taux Oxygène" ((Taux_Oxy 30 >) (Taux_Oxy 15 <)) -3))
+(defparameter R7 '("Taux Azote" ((Taux_Azo 65 >) (Taux_Azo 80 <)) 3))
+(defparameter R8 '("Taux Azote" ((Taux_Azo 80 >) (Taux_Azo 65 <)) -3))
+(defparameter R9 '("Taux CO2" ((Taux_CO2 5 >) (Taux_CO2 15 <)) 3))
+(defparameter R10 '("Taux CO2" ((Taux_CO2 15 >) (Taux_CO2 5 <)) 3))
+(defparameter R11 '("Presence champ magnétique" ((Champ_Magn T eq)) 5))
+(defparameter R12 '("Presence champ magnétique" ((Champ_Magn NIL eq)) -5))
+(defparameter R13 '("Puissance champ magnétique" ((Puissance_CM 0.5 >)) 3))
+(defparameter R14 '("Puissance champ magnétique" ((Puissance_CM 0.5 <)) -3))
+(defparameter R15 '("Présence de saisons" ((Deg_Inclinaison T eq)) 5))
+(defparameter R16 '("Température de surface vivable" ((Temp_Surface 0 >) (Temp_Surface 60 <)) 5))
+(defparameter R17 '("Température de surface vivable" ((Temp_Surface 60 >) (Temp_Surface 0 <)) -1000))
+(defparameter R18 '("Taille Planete" ((Rayon 3000 >) (Rayon 8000 <)) "Taille terrestre"))
+(defparameter R19 '("Taille Planete" ((Rayon 8000 >) (Rayon 13000 <)) "Taille super-Terre"))
+(defparameter R20'("Taille Planete" ((Rayon 13000 >) (Rayon 38000 <)) "Taille neptunienne"))
+(defparameter R21'("Gravite" ((Gravite 0.5 >) (Gravite 1.5 <)) 3))
+(defparameter R22'("Gravite" ((Gravite 0.5 <)) -2))
+(defparameter R23'("Gravite" ((Gravite 10 >)) -10))
+(defparameter R24'("Gravite" ((Gravite 0.5 >) (Gravite 1.5 <)) "Gravite terrestre"))
+(defparameter R25'("Gravite" ((Gravite 0.5 <)) "Faible Gravite"))
+(defparameter R26'("Gravite" ((Gravite 10 >)) "Forte Gravite"))
+(defparameter R27 '("Distance" ((Distance X >) (Distance Y <)) 20))
+(defparameter R28 '("Distance" ((Distance Y >) (Distance X <)) -100))
+(defparameter R29 '("Habitabilite" ((Habitabilite 50 >)) "Planète Habitable"))
+(defparameter R30 '("Habitabilite" ((Habitabilite 50 <)) "Planète non-Habitable"))
+
+(defparameter BDR '(R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 R21 R22 R23 R24 R25 R26 R27 R28 R29 R30))
+
+;Liste d'étoiles et de leurs zones habitables
+(defparameter Liste_Etoiles '((Soleil 0.5 1.41) (Proxima Centauri 0.0423 0.0816) (Wolf_359 0.024 0.052) (Sirius 2.7 5.8)))
+(setq Infos_Planete ' (Nom Type Rayon Distance Etoile Atmos Taux_Oxy Taux_Azo Taux_CO2 Cahmp_Magn Deg_Inclinaison Gravite Temp_Surface))
+
+;Fonctions utiles pour manipuler notre base de règles
+(defun get_description (regle)
+  (first regle)
+  )
+
+(defun get_condition (regle)
+  (second regle)
+  )
+
+(defun get_resultat (regle)
+  (third regle)
+  )
+
+;Fonctions utiles pour manipuler conditions
+(defun get_attribut (cond)
+  (first cond)
+  )
+
+(defun get_valeur (cond)
+  (second cond)
+  )
+
+(defun get_operateur (cond)
+  (third cond)
+  )
+
+;Fonctions de verification de conditions des différentes règles
+  (defun check (BF regle)
+    (let ((res T))
+        (dolist (x (get_condition regle))
+            (if (assoc (get_attribut x) BF)
+                (if (not (eval (list (get_operateur x) (second (assoc (get_attribut x) BF)) (get_valeur x))))
+                    (setq res NIL)
+                )
+            )
+        )
+        res
+    )
+)
+
+;Fonction nous permettant de savoir si il s'agit d'une incrémentation ou d'une valeur à afficher
+
+(defun check_resultat (regle)
+  (numberp (car (last regle)))
+  )
+
+;Fonction de modification de bdf
+
+(defun modif_habitabilite (bdf regle)
+  (if (check bdf regle)
+      (if (check_resultat regle)
+          (progn
+            (setq x (+ (cadr (assoc 'Habitabilite bdf)) (car (last regle))))
+            (setf (cadr (assoc 'Habitabilite bdf)) x)
+            )
+        )
+    )
+  )
+
+;Fonction d'enregistrement de donnée
+
+(defun keep (x y)
+      (setq L (append x (list y)))
+  )
+
+(defun ajout_donnee (bdf regle L)
+    (if (check bdf regle)
+        (if (not (check_resultat regle))
+              (setq L (keep L (last regle)))
+          )
+      )
+    )
+
+;;Fonction remplacement X et Y dans les règles de zone habitables
+
+(defun ajustement_regle (bdf)
+  (setq star (cadr (cadr (assoc 'etoile bdf))))
+  (setq X (cadr (assoc star Liste_Etoiles)))
+  (setq Y (caddr (assoc star Liste_Etoiles)))
+  (setf (second (car (get_condition R27))) X)
+  (setf (second (cadr (get_condition R27))) Y)
+  (setf (second (car (get_condition R28))) Y)
+  (setf (second (cadr (get_condition R28))) X)
+  )
+
+;Interface utilisateur
+    (defun options ()
+      (print "****************************************")
+      (print (concatenate 'string "Nombre de faits présents en base : " (write-to-string (length base_de_faits))))
+      (print "1 : Ajout d'un fait à la base de faits")
+      (print "2 : Demarrer moteur")
+      (print "3 : Afficher base de faits")
+      (print "4 : Utiliser planete pré-remplie")
+      (print "5 : Quitter le SE")
+      (print "****************************************")
+      (let ((opt (read)))
+        (case opt
+          (1 (ajout_faits))
+          (2 (lancer_moteur BDR base_de_faits))
+          (3 (write base_de_faits))
+          (4 (planete_PR))
+          (5 (setq sortie 1))
+          ))
+      )
+
+    (defun menu_utilisateur ()
+      (setq base_de_faits '((Habitabilite 0)))
+      (print "Bienvenue dans notre SE")
+      (setq sortie 0)
+      (loop
+        (options)
+        (if (eq sortie 1)
+            (progn
+              (write "Fin du SE")
+              (return))
+        )
+        )
+      )
+
+    (defun transfo_input (line)
+      (with-input-from-string (s line)
+        (loop
+          :for num := (read s nil nil)
+          :while num
+          :collect num)))
+
+(defun ajout_faits()
+      (let ((saisie NIL) attribut valeur)
+        (write-line "")
+        (write-line "Voici la liste des differentes informations que vous pouvez choisir :")
+          (dotimes (x (length Infos_planete))
+            (write-line (concatenate 'string (write-to-string x) " - " (symbol-name (nth x Infos_Planete))))
+            )
+          (loop
+            (print "Choisissez le numéro d'ordre de l'un des types de faits")
+    	(setq saisie (read-line))
+            (cond
+             ((< (parse-integer saisie) (length Infos_Planete))
+              (setq type_fait (nth (parse-integer saisie) Infos_Planete))
+              (return-from NIL)
+    	)
+             (T (print "Erreur de saisie !"))
+             )
+            )
+          (setq saisie (read-line))
+          (setq valeur (car (transfo_input saisie)))
+          (push (list type_fait valeur) base_de_faits)
+          )
+      )
+
+    (defun planete_PR ()
+      (write "Choisir planete exemple 1 ou 2 :")
+      (let ((opt (read)))
+        (case opt
+          (1 (lancer_moteur BDR planete1))
+          (2 (lancer_moteur BDR planete2))
+          )
+        )
+      )
+
+      (defun lancer_moteur (BR BF)
+        (ajustement_regle BF)
+        (let ((liste_regles_faites '()) (L (list (cadr (cadr (assoc 'nom BF))))))
+            (print (setq L (moteur BR liste_regles_faites BF L)))
+        )
+    )
+    (defun moteur (BR liste_regles_faites BF L)
+        (let ((liste_regles_possibles (candidates BR liste_regles_faites BF)))
+            (format t "Regles possibles : ~S ~&" liste_regles_possibles)
+            (if (not (null liste_regles_possibles))
+                (progn
+                    (dolist (x liste_regles_possibles)
+                        (if (check_resultat (eval x))
+                            (modif_habitabilite BF (eval x))
+                            (setq L (append (ajout_donnee BF (eval x) L)))
+                        )
+                        (push x liste_regles_faites)
+                    )
+                    (moteur BR liste_regles_faites BF L)
+                )
+                L
+            )
+        )
+    )
+    (defun candidates (BR liste_regles_faites BF)
+    (let ((res '()))
+        (dolist (x BR)
+            (if (and (assoc (caar (get_condition (eval x))) BF) (not (member x liste_regles_faites)))
+                (if (check BF (eval x))
+                    (setq res (append res (list x)))
+                )
+            )
+        )
+        res
+    )
+)
